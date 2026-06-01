@@ -1,0 +1,78 @@
+# ===================================================================
+# GENERAZIONE DATASET SILICIO PER MACHINE LEARNING (POTENZIALE SW)
+# ===================================================================
+
+# 1. INIZIALIZZAZIONE DEL SISTEMA
+units           metal           # Distanze in Angstrom, Energie in eV, Tempo in ps
+dimension       3
+boundary        p p p           # Condizioni al contorno periodiche in x, y, z
+atom_style      atomic          # Stile atomico standard (senza cariche fisse/legami)
+
+# 2. CREAZIONE DEL RETICOLO E DEGLI ATOMI
+lattice         diamond 5.431   # Costante di reticolo sperimentale per il Si
+region          box block 0 3 0 3 0 3  # Creiamo una supercella 3x3x3 (216 atomi)
+create_box      1 box
+create_atoms    1 box
+mass            1 28.0855       # Massa del Silicio
+
+# 3. ASSEGNAZIONE DEL POTENZIALE STILLINGER-WEBER
+pair_style      sw
+# Assicurati di avere il file "Si.sw" nella stessa cartella da cui lanci lo script!
+pair_coeff      * * Si.sw Si
+
+# 4. IMPOSTAZIONI FISICHE E OUTPUT (IL DATASET)
+timestep        0.001           # Time step di 1 fs (0.001 ps)
+
+# Calcoliamo l'energia potenziale su ogni singolo atomo
+compute         pe_atom all pe/atom
+
+# Comando DUMP: Questo è il cuore del vostro dataset!
+# Ogni 1000 step salverà nel file "dataset.dump":
+# ID, Tipo, coordinate (x,y,z), forze (fx,fy,fz) ed energia potenziale
+dump            dataset_out all custom 1000 dataset.dump id type x y z fx fy fz c_pe_atom
+dump_modify     dataset_out sort id  # Ordina gli atomi per ID per coerenza
+
+# Output a schermo/log per monitorare la simulazione
+thermo          1000
+thermo_style    custom step temp pe ke etotal press vol
+
+# Inizializziamo le velocità a 300 K
+velocity        all create 300.0 12345 dist gaussian
+
+# ===================================================================
+# PROTOCOLLO DI DINAMICA MOLECOLARE (Totale: 9,000,000 step = 9000 frame)
+# ===================================================================
+
+# FASE 1: Equilibrazione solido cristallino a 300 K
+# (Estraiamo 2000 campioni stabili)
+fix             1 all nvt temp 300.0 300.0 0.1
+run             2000000
+
+# FASE 2: Riscaldamento graduale da 300 K a 1500 K (Solido caldo)
+# (Estraiamo 1000 campioni in fase di espansione termica)
+fix             1 all nvt temp 300.0 1500.0 0.1
+run             1000000
+
+# FASE 3: Mantenimento solido ad alte temperature (1500 K)
+# (Estraiamo 2000 campioni con forti vibrazioni reticolari)
+fix             1 all nvt temp 1500.0 1500.0 0.1
+run             2000000
+
+# FASE 4: Fusione e mantenimento allo stato liquido (3000 K)
+# (Estraiamo 2000 campioni caotici, con rottura dei legami)
+fix             1 all nvt temp 3000.0 3000.0 0.1
+run             2000000
+
+# FASE 5: Quenching (Raffreddamento istantaneo) da 3000 K a 300 K
+# (Estraiamo 1000 campioni durante la transizione liquido -> amorfo)
+fix             1 all nvt temp 3000.0 300.0 0.1
+run             1000000
+
+# FASE 6: Equilibrazione della fase amorfa a 300 K
+# (Estraiamo 1000 campioni di silicio amorfo stabile)
+fix             1 all nvt temp 300.0 300.0 0.1
+run             1000000
+
+# Fine della simulazione
+unfix           1
+print           "Simulazione completata. Dataset generato con successo."
