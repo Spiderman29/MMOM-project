@@ -1,0 +1,65 @@
+# ===================================================================
+# DATASET SILICIO - STILE PANNA ESTESO (solido + liquido, NVE)
+# ===================================================================
+
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+
+# Cella cubica con parametro reticolare 16.053 Å (densità fase liquida SW)
+lattice         diamond 5.351
+region          box block 0 3 0 3 0 3
+create_box      1 box
+create_atoms    1 box
+mass            1 28.0855
+
+pair_style      sw
+pair_coeff      * * Si.sw Si
+
+timestep        0.001
+
+compute         pe_atom all pe/atom
+thermo          1000
+thermo_style    custom step temp pe ke etotal press vol
+
+# ===================================================================
+# FASE 1: Equilibrazione NVT a 300 K (fase solida cristallina)
+# ===================================================================
+velocity        all create 300.0 12345 dist gaussian
+fix             eq all nvt temp 300.0 300.0 0.1
+run             50000
+unfix           eq
+
+# Raccolta dati solido cristallino in NVE (~5000 frame)
+dump            dump_solid all custom 1 dataset_solid.dump id type x y z fx fy fz c_pe_atom
+dump_modify     dump_solid sort id every 76
+fix             prod all nve
+run             380000          # 380000 / 76 = 5000 snapshot
+unfix           prod
+undump          dump_solid
+
+# ===================================================================
+# FASE 2: Riscaldamento NVT da 300 K a 3000 K
+# (non raccogliamo dati qui, è solo transizione)
+# ===================================================================
+fix             heat all nvt temp 300.0 3000.0 0.1
+run             100000
+unfix           heat
+
+# ===================================================================
+# FASE 3: Equilibrazione NVT a 3000 K (fase liquida)
+# ===================================================================
+fix             eq2 all nvt temp 3000.0 3000.0 0.1
+run             50000
+unfix           eq2
+
+# Raccolta dati liquido in NVE (~5000 frame)
+dump            dump_liquid all custom 1 dataset_liquid.dump id type x y z fx fy fz c_pe_atom
+dump_modify     dump_liquid sort id every 76
+fix             prod2 all nve
+run             380000          # 380000 / 76 = 5000 snapshot
+unfix           prod2
+undump          dump_liquid
+
+print           "Simulazione completata. Due dump file generati."

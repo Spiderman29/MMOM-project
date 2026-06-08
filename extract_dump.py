@@ -60,8 +60,13 @@ def parse_lammps_dump_to_csv(filepath, output_csv):
 # Esecuzione principale
 # ==========================================
 if __name__ == "__main__":
-    input_dump = "./lammps/dataset.dump"
-    output_file = "./lammps/extracted_data.csv"
+    parse_lammps_dump_to_csv(
+        filepath="./lammps/dataset_solid.dump",
+        output_csv="./lammps/extracted_solid.csv"
+    )
     
-    # Avvia l'estrazione
-    parse_lammps_dump_to_csv(input_dump, output_file)
+    # Estrai il dump del liquido
+    parse_lammps_dump_to_csv(
+        filepath="./lammps/dataset_liquid.dump",
+        output_csv="./lammps/extracted_liquid.csv"
+    )
