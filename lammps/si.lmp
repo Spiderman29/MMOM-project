@@ -10,7 +10,7 @@ atom_style      atomic          # Stile atomico standard (senza cariche fisse/le
 
 # 2. CREAZIONE DEL RETICOLO E DEGLI ATOMI
 lattice         diamond 5.431   # Costante di reticolo sperimentale per il Si
-region          box block 0 3 0 3 0 3  # Creiamo una supercella 3x3x3 (216 atomi)
+region          box block 0 2 0 2 0 2  # Creiamo una cella 2x2x2 (64 atomi)
 create_box      1 box
 create_atoms    1 box
 mass            1 28.0855       # Massa del Silicio
@@ -29,7 +29,7 @@ compute         pe_atom all pe/atom
 # Comando DUMP: Questo è il cuore del vostro dataset!
 # Ogni 1000 step salverà nel file "dataset.dump":
 # ID, Tipo, coordinate (x,y,z), forze (fx,fy,fz) ed energia potenziale
-dump            dataset_out all custom 1000 dataset.dump id type x y z fx fy fz c_pe_atom
+dump            dataset_out all custom 1000 dataset64.dump id type x y z fx fy fz c_pe_atom
 dump_modify     dataset_out sort id  # Ordina gli atomi per ID per coerenza
 
 # Output a schermo/log per monitorare la simulazione

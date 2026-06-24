@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import sys
 
 def parse_lammps_dump_to_csv(filepath, output_csv):
     """
@@ -60,13 +61,10 @@ def parse_lammps_dump_to_csv(filepath, output_csv):
 # Esecuzione principale
 # ==========================================
 if __name__ == "__main__":
-    parse_lammps_dump_to_csv(
-        filepath="./lammps/dataset_solid.dump",
-        output_csv="./lammps/extracted_solid.csv"
-    )
-    
-    # Estrai il dump del liquido
-    parse_lammps_dump_to_csv(
-        filepath="./lammps/dataset_liquid.dump",
-        output_csv="./lammps/extracted_liquid.csv"
-    )
+    if len(sys.argv) != 3:
+        print("Utilizzo: python .\extract_dump.py <file.dump> <file.csv>")
+        sys.exit(1)
+
+    infile = sys.argv[1]
+    outfile = sys.argv[2]
+    parse_lammps_dump_to_csv(filepath=infile, output_csv=outfile)
