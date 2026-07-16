@@ -1,78 +1,63 @@
-# ===================================================================
-# GENERAZIONE DATASET SILICIO PER MACHINE LEARNING (POTENZIALE SW)
-# ===================================================================
-
-# 1. INIZIALIZZAZIONE DEL SISTEMA
-units           metal           # Distanze in Angstrom, Energie in eV, Tempo in ps
+units           metal           # Distances in Angstroms, Energies in eV, Time in ps
 dimension       3
-boundary        p p p           # Condizioni al contorno periodiche in x, y, z
-atom_style      atomic          # Stile atomico standard (senza cariche fisse/legami)
+boundary        p p p           # Periodic boundary conditions in x, y, z
+atom_style      atomic          # Standard atomic style (no fixed charges/bonds)
 
-# 2. CREAZIONE DEL RETICOLO E DEGLI ATOMI
-lattice         diamond 5.431   # Costante di reticolo sperimentale per il Si
-region          box block 0 2 0 2 0 2  # Creiamo una cella 2x2x2 (64 atomi)
+lattice         diamond 5.431
+region          box block 0 2 0 2 0 2  # Create a 2x2x2 cell (64 atoms)
 create_box      1 box
 create_atoms    1 box
-mass            1 28.0855       # Massa del Silicio
+mass            1 28.0855
 
-# 3. ASSEGNAZIONE DEL POTENZIALE STILLINGER-WEBER
 pair_style      sw
-# Assicurati di avere il file "Si.sw" nella stessa cartella da cui lanci lo script!
 pair_coeff      * * Si.sw Si
 
-# 4. IMPOSTAZIONI FISICHE E OUTPUT (IL DATASET)
-timestep        0.001           # Time step di 1 fs (0.001 ps)
+timestep        0.001           # Time step of 1 fs (0.001 ps)
 
-# Calcoliamo l'energia potenziale su ogni singolo atomo
+# Calculate the potential energy for each individual atom
 compute         pe_atom all pe/atom
 
-# Comando DUMP: Questo è il cuore del vostro dataset!
-# Ogni 1000 step salverà nel file "dataset.dump":
-# ID, Tipo, coordinate (x,y,z), forze (fx,fy,fz) ed energia potenziale
+# Every 1000 steps it will save to the "dataset.dump" file:
+# ID, Type, coordinates (x,y,z), forces (fx,fy,fz) and potential energy
 dump            dataset_out all custom 1000 dataset64.dump id type x y z fx fy fz c_pe_atom
-dump_modify     dataset_out sort id  # Ordina gli atomi per ID per coerenza
+dump_modify     dataset_out sort id  # Sort atoms by ID for consistency
 
-# Output a schermo/log per monitorare la simulazione
 thermo          1000
 thermo_style    custom step temp pe ke etotal press vol
 
-# Inizializziamo le velocità a 300 K
+# Initialize velocities at 300 K
 velocity        all create 300.0 12345 dist gaussian
 
-# ===================================================================
-# PROTOCOLLO DI DINAMICA MOLECOLARE (Totale: 9,000,000 step = 9000 frame)
-# ===================================================================
-
-# FASE 1: Equilibrazione solido cristallino a 300 K
-# (Estraiamo 2000 campioni stabili)
+# PHASE 1: Crystalline solid equilibration at 300 K
+# (Extract 2000 stable samples)
 fix             1 all nvt temp 300.0 300.0 0.1
 run             2000000
 
-# FASE 2: Riscaldamento graduale da 300 K a 1500 K (Solido caldo)
-# (Estraiamo 1000 campioni in fase di espansione termica)
+# PHASE 2: Gradual heating from 300 K to 1500 K (Hot solid)
+# (Extract 1000 samples during thermal expansion phase)
 fix             1 all nvt temp 300.0 1500.0 0.1
 run             1000000
 
-# FASE 3: Mantenimento solido ad alte temperature (1500 K)
-# (Estraiamo 2000 campioni con forti vibrazioni reticolari)
+# PHASE 3: Maintain solid at high temperatures (1500 K)
+# (Extract 2000 samples with strong lattice vibrations)
 fix             1 all nvt temp 1500.0 1500.0 0.1
 run             2000000
 
-# FASE 4: Fusione e mantenimento allo stato liquido (3000 K)
-# (Estraiamo 2000 campioni caotici, con rottura dei legami)
+# PHASE 4: Melting and maintaining in the liquid state (3000 K)
+# (Extract 2000 chaotic samples, with bond breaking)
 fix             1 all nvt temp 3000.0 3000.0 0.1
 run             2000000
 
-# FASE 5: Quenching (Raffreddamento istantaneo) da 3000 K a 300 K
-# (Estraiamo 1000 campioni durante la transizione liquido -> amorfo)
+# PHASE 5: Quenching (Instantaneous cooling) from 3000 K to 300 K
+# (Extract 1000 samples during the liquid -> amorphous transition)
 fix             1 all nvt temp 3000.0 300.0 0.1
 run             1000000
 
-# FASE 6: Equilibrazione della fase amorfa a 300 K
-# (Estraiamo 1000 campioni di silicio amorfo stabile)
+# PHASE 6: Equilibration of the amorphous phase at 300 K
+# (Extract 1000 samples of stable amorphous silicon)
 fix             1 all nvt temp 300.0 300.0 0.1
 run             1000000
 
-# Fine della simulazione
+# End of the simulation
 unfix           1
-print           "Simulazione completata. Dataset generato con successo."
+print           "Simulation completed. Dataset generated successfully."
