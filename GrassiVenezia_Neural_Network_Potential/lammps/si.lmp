@@ -1,0 +1,63 @@
+units           metal           # Distances in Angstroms, Energies in eV, Time in ps
+dimension       3
+boundary        p p p           # Periodic boundary conditions in x, y, z
+atom_style      atomic          # Standard atomic style (no fixed charges/bonds)
+
+lattice         diamond 5.431
+region          box block 0 2 0 2 0 2  # Create a 2x2x2 cell (64 atoms)
+create_box      1 box
+create_atoms    1 box
+mass            1 28.0855
+
+pair_style      sw
+pair_coeff      * * Si.sw Si
+
+timestep        0.001           # Time step of 1 fs (0.001 ps)
+
+# Calculate the potential energy for each individual atom
+compute         pe_atom all pe/atom
+
+# Every 1000 steps it will save to the "dataset.dump" file:
+# ID, Type, coordinates (x,y,z), forces (fx,fy,fz) and potential energy
+dump            dataset_out all custom 1000 dataset64.dump id type x y z fx fy fz c_pe_atom
+dump_modify     dataset_out sort id  # Sort atoms by ID for consistency
+
+thermo          1000
+thermo_style    custom step temp pe ke etotal press vol
+
+# Initialize velocities at 300 K
+velocity        all create 300.0 12345 dist gaussian
+
+# PHASE 1: Crystalline solid equilibration at 300 K
+# (Extract 2000 stable samples)
+fix             1 all nvt temp 300.0 300.0 0.1
+run             2000000
+
+# PHASE 2: Gradual heating from 300 K to 1500 K (Hot solid)
+# (Extract 1000 samples during thermal expansion phase)
+fix             1 all nvt temp 300.0 1500.0 0.1
+run             1000000
+
+# PHASE 3: Maintain solid at high temperatures (1500 K)
+# (Extract 2000 samples with strong lattice vibrations)
+fix             1 all nvt temp 1500.0 1500.0 0.1
+run             2000000
+
+# PHASE 4: Melting and maintaining in the liquid state (3000 K)
+# (Extract 2000 chaotic samples, with bond breaking)
+fix             1 all nvt temp 3000.0 3000.0 0.1
+run             2000000
+
+# PHASE 5: Quenching (Instantaneous cooling) from 3000 K to 300 K
+# (Extract 1000 samples during the liquid -> amorphous transition)
+fix             1 all nvt temp 3000.0 300.0 0.1
+run             1000000
+
+# PHASE 6: Equilibration of the amorphous phase at 300 K
+# (Extract 1000 samples of stable amorphous silicon)
+fix             1 all nvt temp 300.0 300.0 0.1
+run             1000000
+
+# End of the simulation
+unfix           1
+print           "Simulation completed. Dataset generated successfully."

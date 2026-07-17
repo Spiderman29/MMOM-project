@@ -23,3 +23,6 @@ experiment_hl2_hs64_dr0p0_bs128_lr0p0001_ep1500_pt75_l20p0_0710-1731	RMSE: 0.547
 experiment_hl2_hs64_dr0p0_bs128_lr0p0001_ep1500_pt75_l20p0_0710-2228	RMSE: 0.5478
 experiment_hl2_hs64_dr0p0_bs128_lr0p0001_ep1500_pt75_l20p0_0716-1430	RMSE: 0.5537
 experiment_hl2_hs64_dr0p0_bs128_lr0p0001_ep1500_pt75_l20p0_0717-1310	RMSE: 0.5478
+experiment_hl2_hs64_dr0p0_bs128_lr0p0001_ep1500_pt75_l20p0_0717-1816	RMSE: 0.5478
+experiment_hl2_hs64_dr0p0_bs128_lr0p0001_ep1500_pt75_l20p0_0717-1834	RMSE: 0.5478
+experiment_hl2_hs64_dr0p0_bs128_lr0p0001_ep1500_pt75_l20p0_0717-1938	RMSE: 0.5478
