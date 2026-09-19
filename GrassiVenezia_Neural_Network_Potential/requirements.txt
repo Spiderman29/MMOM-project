@@ -1,0 +1,12 @@
+numpy
+pandas
+matplotlib
+seaborn
+scikit-learn
+scipy
+numba
+tqdm
+torch
+tensorboard
+torchsummary
+ase
